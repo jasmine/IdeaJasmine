@@ -20,11 +20,6 @@ class JasmineConfigurationType : ConfigurationTypeBase("JavascriptTestRunnerJasm
         fun getInstance(): JasmineConfigurationType {
             return Holder.INSTANCE
         }
-
-        fun getFactory(): ConfigurationFactory {
-            val type = getInstance()
-            return type.getConfigurationFactories()[0]
-        }
     }
 
 

@@ -14,6 +14,8 @@ import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.PathUtil
+import com.intellij.util.execution.ParametersListUtil
+import org.apache.commons.lang.StringUtils
 import java.io.File
 import java.nio.file.Paths
 
@@ -23,16 +25,36 @@ class JasmineRunProfileState(private var project: Project,
                              environment: ExecutionEnvironment) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
-        val interpreter = runConfig.nodeJs.resolveAsLocal(project)
+        val runSettings = runConfig.jasmineRunSettings
+        val interpreter = runSettings.nodeJs.resolveAsLocal(project)
         val commandLine = GeneralCommandLine()
-        commandLine.workDirectory = File(project.baseDir.path)
+
+        if (StringUtils.isBlank(runSettings.workingDir)) {
+            commandLine.withWorkDirectory(project.baseDir.path)
+        } else {
+            commandLine.withWorkDirectory(runSettings.workingDir)
+        }
+
         commandLine.exePath = interpreter.interpreterSystemDependentPath
 
+        runSettings.envData.configureCommandLine(commandLine, true)
+
+        val nodeOptionsList = ParametersListUtil.parse(runSettings.nodeOptions.trim())
+        commandLine.addParameters(nodeOptionsList)
 
         commandLine.addParameter(jasminePath(runConfig))
+
+        val jasmineOptionsList = ParametersListUtil.parse(runSettings.extraJasmineOptions.trim())
+        commandLine.addParameters(jasmineOptionsList)
+
+        if (!StringUtils.isBlank(runSettings.jasmineConfigFile)) {
+            commandLine.addParameter("--config=${runSettings.jasmineConfigFile}")
+        }
+
         commandLine.addParameter("--reporter=${findReporterPath()}")
-        if (runConfig.envData != null) {
-            commandLine.environment.putAll(runConfig.envData!!.envs)
+
+        if (!StringUtils.isBlank(runSettings.specFile)) {
+            commandLine.addParameter(runSettings.specFile)
         }
 
         val processHandler = KillableColoredProcessHandler(commandLine)
