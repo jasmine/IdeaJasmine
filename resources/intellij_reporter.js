@@ -1,21 +1,26 @@
 if (module && require) {
 
-  function pad(n) { return n < 10 ? "0"+n : n; }
-  function padThree(n) { return n < 10 ? "00"+n : n < 100 ? "0"+n : n; }
+  function pad(n) {
+    return n < 10 ? "0" + n : n;
+  }
+
+  function padThree(n) {
+    return n < 10 ? "00" + n : n < 100 ? "0" + n : n;
+  }
 
   function ISODateString(d) {
     return d.getUTCFullYear() + "-" +
-      pad(d.getUTCMonth()+1) + "-" +
-      pad(d.getUTCDate()) + "T" +
-      pad(d.getUTCHours()) + ":" +
-      pad(d.getUTCMinutes()) + ":" +
-      pad(d.getUTCSeconds()) + "." +
-      // TeamCity wants ss.SSS
-      padThree(d.getUTCMilliseconds());
+        pad(d.getUTCMonth() + 1) + "-" +
+        pad(d.getUTCDate()) + "T" +
+        pad(d.getUTCHours()) + ":" +
+        pad(d.getUTCMinutes()) + ":" +
+        pad(d.getUTCSeconds()) + "." +
+        // TeamCity wants ss.SSS
+        padThree(d.getUTCMilliseconds());
   }
 
   function escapeTeamCityString(str) {
-    if(!str) {
+    if (!str) {
       return "";
     }
     if (Object.prototype.toString.call(str) === "[object Date]") {
@@ -23,14 +28,14 @@ if (module && require) {
     }
 
     return str.toString().replace(/\|/g, "||")
-      .replace(/'/g, "|'")
-      .replace(/\n/g, "|n")
-      .replace(/\r/g, "|r")
-      .replace(/\u0085/g, "|x")
-      .replace(/\u2028/g, "|l")
-      .replace(/\u2029/g, "|p")
-      .replace(/\[/g, "|[")
-      .replace(/]/g, "|]");
+        .replace(/'/g, "|'")
+        .replace(/\n/g, "|n")
+        .replace(/\r/g, "|r")
+        .replace(/\u0085/g, "|x")
+        .replace(/\u2028/g, "|l")
+        .replace(/\u2029/g, "|p")
+        .replace(/\[/g, "|[")
+        .replace(/]/g, "|]");
   }
 
   function tcLog(message, attrs) {
@@ -50,16 +55,52 @@ if (module && require) {
     console.log(str);
   }
 
-  function IntelliJReporter () {
+  var getNextSuiteFailureId = (function () {
+    var runningId = 0;
+    return function () {
+      return 'failSuite' + runningId++;
+    }
+  })();
+
+  function merge(initial, overrides) {
+    return Object.assign({}, initial, overrides);
+  }
+
+  function logFailure(baseData, result) {
+    // IntelliJ supports only 1
+    var failure = result.failedExpectations[0];
+    tcLog('testFailed', merge(baseData, {
+      message: failure.message,
+      details: failure.stack,
+      expected: failure.expected,
+      actual: failure.actual
+    }));
+  }
+
+  function IntelliJReporter() {
     this.suiteIds = ['0'];
-    this.parentId = function() {
+    this.parentId = function () {
       return this.suiteIds[this.suiteIds.length - 1];
+    };
+    this.logSuiteFailure = function(result) {
+      // IntelliJ only supports failures in tests, not suites
+      var dummySpec = {
+        nodeId: getNextSuiteFailureId(),
+        parentNodeId: this.parentId(),
+        name: 'Suite level failure'
+      };
+      tcLog('testStarted', merge(dummySpec, {
+        nodeType: 'test',
+        running: true
+      }));
+
+      logFailure(dummySpec, result);
     };
 
     this.jasmineStarted = function (stats) {
       tcLog('enteredTheMatrix');
       tcLog('testingStarted');
-      tcLog('testCount', { count: stats.totalSpecsDefined });
+      tcLog('testCount', {count: stats.totalSpecsDefined});
     };
 
     this.suiteStarted = function (result) {
@@ -72,7 +113,11 @@ if (module && require) {
       });
     };
 
-    this.suiteDone = function(result) {
+    this.suiteDone = function (result) {
+      if (result.status === 'failed') {
+        this.logSuiteFailure(result);
+      }
+
       this.suiteIds.pop();
       var parentId = this.parentId();
       tcLog('testSuiteFinished', {
@@ -83,7 +128,7 @@ if (module && require) {
       });
     };
 
-    this.specStarted = function(result) {
+    this.specStarted = function (result) {
       tcLog('testStarted', {
         nodeId: result.id,
         parentNodeId: this.parentId(),
@@ -93,7 +138,7 @@ if (module && require) {
       });
     };
 
-    this.specDone = function(result) {
+    this.specDone = function (result) {
       var details = {
         nodeId: result.id,
         parentNodeId: this.parentId(),
@@ -104,18 +149,16 @@ if (module && require) {
       } else if (result.status === 'passed') {
         tcLog('testFinished', details);
       } else {
-        // IntelliJ supports only 1
-        var failure = result.failedExpectations[0];
-        details.message = failure.message;
-        details.details = failure.stack;
-        details.expected = failure.expected;
-        details.actual = failure.actual;
-        tcLog('testFailed', details);
+        logFailure(details, result);
       }
 
     };
 
     this.jasmineDone = function (runDetails) {
+      if (runDetails.overallStatus === 'failed') {
+        this.logSuiteFailure(runDetails);
+      }
+
       tcLog('testingFinished');
     };
   }
