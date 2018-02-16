@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>io.pivotal.jasmine</id>
   <name>Jasmine</name>
-  <version>1.1</version>
+  <version>1.2</version>
   <vendor email="jasmine-js@googlegroups.com" url="http://jasmine.github.io">Jasmine</vendor>
 
   <depends>com.intellij.modules.lang</depends>
