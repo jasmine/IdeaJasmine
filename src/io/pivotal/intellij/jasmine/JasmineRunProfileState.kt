@@ -69,7 +69,7 @@ class JasmineRunProfileState(private var project: Project,
 
     private fun jasminePath(runConfig: JasmineRunConfiguration): String{
         val jasminePath = Paths.get(runConfig.selectedJasminePackage().systemDependentPath)
-                .resolve("""bin${File.separatorChar}jasmine.js""")
+                .resolve(runConfig.jasmineRunSettings.jasmineExecutable)
         return jasminePath.toAbsolutePath().toString()
     }
 

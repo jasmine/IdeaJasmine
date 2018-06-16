@@ -30,6 +30,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
     private var workingDirectoryField = createWorkingDirectoryField()
     private var envVars: EnvironmentVariablesTextFieldWithBrowseButton = EnvironmentVariablesTextFieldWithBrowseButton()
     private var jasminePackageField: NodePackageField = NodePackageField(nodeJsInterpreterField, "jasmine")
+    private var jasmineExecutableField = createJasmineExecutableField()
     private var jasmineOptionsField = createJasmineOptionsField()
     private var jasmineConfigFileField = createJasmineConfigFileField()
 
@@ -44,6 +45,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
                 .addLabeledComponent("&Working directory", workingDirectoryField)
                 .addLabeledComponent("&Environment variables", envVars)
                 .addLabeledComponent("&Jasmine package", jasminePackageField)
+                .addLabeledComponent("Jasmine executable", jasmineExecutableField)
                 .addLabeledComponent("Jasmine &config file", jasmineConfigFileField)
                 .addLabeledComponent("E&xtra Jasmine options", jasmineOptionsField)
                 .panel
@@ -69,6 +71,18 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
         }
 
         return editor
+    }
+
+    private fun createJasmineExecutableField(): TextFieldWithBrowseButton {
+        val fullField = TextFieldWithBrowseButton()
+        SwingHelper.installFileCompletionAndBrowseDialog(
+                project,
+                fullField,
+                "Select override Jasmine executable file",
+                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+        )
+
+        return fullField
     }
 
     private fun createJasmineConfigFileField(): TextFieldWithHistoryWithBrowseButton {
@@ -116,6 +130,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
                 nodeOptions = nodeOptionsField.text,
                 workingDir = workingDirectoryField.text,
                 envData = envVars.data,
+                jasmineExecutable = jasmineExecutableField.text,
                 jasmineConfigFile = jasmineConfigFileField.text,
                 extraJasmineOptions = jasmineOptionsField.text)
         config.setJasminePackage(jasminePackageField.selected)
@@ -128,6 +143,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
         workingDirectoryField.text = FileUtil.toSystemDependentName(runSettings.workingDir)
         envVars.data = runSettings.envData
         jasminePackageField.selected = config.selectedJasminePackage()
+        jasmineExecutableField.text = runSettings.jasmineExecutable
         jasmineConfigFileField.text = runSettings.jasmineConfigFile
         jasmineOptionsField.text = runSettings.extraJasmineOptions
     }

@@ -9,6 +9,7 @@ data class JasmineRunSettings(
     var workingDir : String = "",
     var envData : EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT,
     var extraJasmineOptions : String = "",
+    var jasmineExecutable: String = "bin/jasmine.js",
     var jasmineConfigFile : String = "",
     var specFile : String = ""
 )
