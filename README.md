@@ -4,10 +4,13 @@ This adds a new run configuration to IntelliJ (and IntelliJ based IDEs) that run
 
 ## Usage
 
-1. Head over to the [release page](https://github.com/jasmine/IdeaJasmine/releases) and download the `IdeaJasmine-<version>.zip` for the latest release. 
+### Installation
 1. In your IDE preferences, go to the "Plugins" node
-1. Click the "Install plugin from disk" button and select the zip file you downloaded
+  * You can install it directly from [jetbrains](https://plugins.jetbrains.com/plugin/10449-jasmine)
+  * Or download from [release page](https://github.com/jasmine/IdeaJasmine/releases) and "Install plugin from disk"
 1. Restart your IDE
+
+### Configure
 1. In the "Run" menu, click on "Edit Configurations", there should be a new "Jasmine" default configuration
 1. Click the "+" to add a new configuration and select "Jasmine" as the template
 1. Fill in your NodeJS interpreter and select the correct Jasmine package and set any other options you want
