@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.60"
+    id "org.jetbrains.kotlin.jvm" version "1.2.70"
     id "org.jetbrains.intellij" version "0.3.9"
 }
 
@@ -27,8 +27,11 @@ prepareSandbox {
 }
 
 publishPlugin {
-    def publishPassword = "$System.env.publishPassword"
-    username publishUsername
-    password publishPassword
+    username System.getenv('IJ_REPO_USERNAME')
+    password System.getenv('IJ_REPO_PASSWORD')
     channels publishChannels
+}
+
+dependencies {
+    compile("org.jetbrains.kotlin:kotlin-stdlib:1.2.70")
 }
