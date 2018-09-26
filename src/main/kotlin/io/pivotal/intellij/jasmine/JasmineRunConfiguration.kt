@@ -30,5 +30,9 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
     fun setJasminePackage(nodePackage: NodePackage) {
         _jasminePackage = nodePackage
     }
+
+    override fun checkConfiguration() {
+        selectedJasminePackage().validateForRunConfiguration("jasmine")
+    }
 }
 

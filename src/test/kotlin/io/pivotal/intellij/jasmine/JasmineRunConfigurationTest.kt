@@ -1,5 +1,6 @@
 package io.pivotal.intellij.jasmine
 
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
 
 class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
@@ -17,5 +18,14 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
         myFixture.addFileToProject("node_modules/jasmine/package.json", "")
 
         assertEquals("/src/node_modules/jasmine", subject.selectedJasminePackage().systemIndependentPath)
+    }
+
+    fun `test configuration error when jasmine package not set`() {
+        try {
+            subject.checkConfiguration()
+            fail("should throw RuntimeConfigurationError")
+        } catch (re: RuntimeConfigurationError) {
+            assertEquals("Unspecified jasmine package", re.message)
+        }
     }
 }
