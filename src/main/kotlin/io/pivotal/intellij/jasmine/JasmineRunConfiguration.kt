@@ -10,6 +10,8 @@ import com.intellij.javascript.testFramework.util.JsTestFqn
 import com.intellij.openapi.project.Project
 import com.intellij.util.PathUtil
 import io.pivotal.intellij.jasmine.scope.JasmineScope
+import io.pivotal.intellij.jasmine.util.JasmineSerializationUtil
+import org.jdom.Element
 
 
 class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) : LocatableConfigurationBase(project, factory, name) {
@@ -47,6 +49,16 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
     override fun getActionName(): String? = when (jasmineRunSettings.scope) {
         JasmineScope.SUITE, JasmineScope.TEST -> jasmineRunSettings.testNames.lastOrNull()
         else -> super.getActionName()
+    }
+
+    override fun writeExternal(element: Element) {
+        super.writeExternal(element)
+        JasmineSerializationUtil.writeXml(element, jasmineRunSettings)
+    }
+
+    override fun readExternal(element: Element) {
+        super.readExternal(element)
+        jasmineRunSettings = JasmineSerializationUtil.readXml(element)
     }
 }
 
