@@ -6,7 +6,10 @@ import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreter
 import com.intellij.javascript.nodejs.util.NodePackage
+import com.intellij.javascript.testFramework.util.JsTestFqn
 import com.intellij.openapi.project.Project
+import com.intellij.util.PathUtil
+import io.pivotal.intellij.jasmine.scope.JasmineScope
 
 
 class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) : LocatableConfigurationBase(project, factory, name) {
@@ -33,6 +36,17 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
 
     override fun checkConfiguration() {
         selectedJasminePackage().validateForRunConfiguration("jasmine")
+    }
+
+    override fun suggestedName(): String? = when (jasmineRunSettings.scope) {
+        JasmineScope.ALL -> "All Tests"
+        JasmineScope.SPEC_FILE -> PathUtil.getFileName(jasmineRunSettings.specFile)
+        JasmineScope.SUITE, JasmineScope.TEST -> JsTestFqn.getPresentableName(jasmineRunSettings.testNames)
+    }
+
+    override fun getActionName(): String? = when (jasmineRunSettings.scope) {
+        JasmineScope.SUITE, JasmineScope.TEST -> jasmineRunSettings.testNames.lastOrNull()
+        else -> super.getActionName()
     }
 }
 
