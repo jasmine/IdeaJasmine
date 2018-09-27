@@ -24,36 +24,60 @@ class JasmineRunConfigurationProducerTest : LightPlatformCodeInsightFixtureTestC
     override fun getTestDataPath(): String = File("src/test/resources/testData").absolutePath
 
     fun `test does not setup if jasmine dependency missing`() {
-        val specFile = myFixture.configureByText("App.spec.js", """<caret>describe("suite", function(){})""")
+        assertNull(setupRunConfiguration(myFixture.configureByText("App.spec.js", "")))
+    }
 
-        assertNull(generateRunConfigurationAtCaret(specFile))
+    fun `test creates all scope configuration from jasmine config file`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+
+        val jasmineConfig = myFixture.configureByFile("spec/support/jasmine.json")
+        val config = setupRunConfiguration(jasmineConfig)!!
+
+        val runSettings = config.jasmineRunSettings
+        assertEquals(JasmineScope.ALL, runSettings.scope)
+        assertEquals("/src/spec/support/jasmine.json", runSettings.jasmineConfigFile)
+    }
+
+    fun `test does not create all scope configuration from other json files`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+        assertNull(setupRunConfiguration(myFixture.configureByFile("package.json")))
     }
 
     fun `test creates file scope configuration from jasmine spec file`() {
         myFixture.copyDirectoryToProject("test-project", "")
 
         val specFile = myFixture.configureByFile("spec/App.spec.js")
-        val config = generateRunConfiguration(specFile)!!
+        val config = setupRunConfiguration(specFile)!!
 
         val runSettings = config.jasmineRunSettings
         assertEquals(JasmineScope.SPEC_FILE, runSettings.scope)
         assertEquals("/src/spec/App.spec.js", runSettings.specFile)
     }
 
-    fun `test does not setup if not a test file`() {
+    fun `test does not create file scope configuration from other js files`() {
         myFixture.copyDirectoryToProject("test-project", "")
-
-        val jsFile = myFixture.configureByFile("App.js")
-        assertNull(generateRunConfiguration(jsFile))
+        assertNull(setupRunConfiguration(myFixture.configureByFile("App.js")))
     }
 
 
-    fun `test configuration not compatible when context not a spec file`() {
+    fun `test configuration not compatible when context cannot setup configuration`() {
         myFixture.copyDirectoryToProject("test-project", "")
 
         val jsFileContext = ConfigurationContext(myFixture.configureByFile("App.js"))
 
         assertConfigNotFromContext(createConfiguration(), jsFileContext)
+    }
+
+    fun `test configuration not compatible when context is different scope`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+
+        val specFileConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.SPEC_FILE
+        ))
+
+        val allScopeContext = ConfigurationContext(myFixture.configureByFile("spec/support/jasmine.json"))
+
+        assertConfigNotFromContext(specFileConfig, allScopeContext)
     }
 
     fun `test configuration compatible when context is same spec file`() {
@@ -69,12 +93,12 @@ class JasmineRunConfigurationProducerTest : LightPlatformCodeInsightFixtureTestC
         assertConfigFromContext(existingConfig, specFileContext)
     }
 
-    private fun generateRunConfigurationAtCaret(specFile: PsiFile): JasmineRunConfiguration? {
+    private fun setupRunConfigurationAtCaret(specFile: PsiFile): JasmineRunConfiguration? {
         val elementAtCaret = specFile.elementAtCaret()
-        return generateRunConfiguration(elementAtCaret)
+        return setupRunConfiguration(elementAtCaret)
     }
 
-    private fun generateRunConfiguration(element: PsiElement): JasmineRunConfiguration? {
+    private fun setupRunConfiguration(element: PsiElement): JasmineRunConfiguration? {
         val configFromContext = configProducer.createConfigurationFromContext(ConfigurationContext(element))
         val config = configFromContext?.configuration ?: return null
         return config as JasmineRunConfiguration

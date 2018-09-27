@@ -4,7 +4,6 @@ import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBro
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.json.JsonFileType
-import com.intellij.lang.javascript.library.JSLibraryUtil
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -20,6 +19,7 @@ import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.util.ui.ComponentWithEmptyText
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.SwingHelper
+import io.pivotal.intellij.jasmine.util.JasmineUtil
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -115,11 +115,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
 
         val files = FileTypeIndex.getFiles(jsonFileType, scope)
 
-        return files.filter { it != null && it.isValid && !it.isDirectory && isJasmineConfigFile(it.nameSequence) && !JSLibraryUtil.isProbableLibraryFile(it) }
-    }
-
-    private fun isJasmineConfigFile(filename: CharSequence): Boolean {
-        return filename.startsWith("jasmine", true)
+        return files.filter { JasmineUtil.isJasmineConfigFile(it) }
     }
 
     override fun createEditor(): JComponent = rootForm

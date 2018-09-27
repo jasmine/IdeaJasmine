@@ -3,15 +3,16 @@ package io.pivotal.intellij.jasmine
 import com.google.common.collect.ImmutableList
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.javascript.testing.JsTestRunConfigurationProducer
+import com.intellij.json.psi.JsonFile
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSTestFileType
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.PsiUtilCore
 import io.pivotal.intellij.jasmine.scope.JasmineScope
+import io.pivotal.intellij.jasmine.util.JasmineUtil
 
 class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRunConfiguration>(JasmineConfigurationType.getInstance(), ImmutableList.of("jasmine")) {
     override fun isConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext): Boolean {
@@ -20,7 +21,7 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
         val thatRunSettings = runConfig.jasmineRunSettings
         val (_, thisRunSettings) = configureSettingsForElement(element, JasmineRunSettings()) ?: return false
 
-        return thisRunSettings.specFile == thatRunSettings.specFile
+        return thisRunSettings.scope == thatRunSettings.scope && thisRunSettings.specFile == thatRunSettings.specFile
     }
 
     override fun setupConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
@@ -45,8 +46,8 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
         val elementFile = PsiUtilCore.getVirtualFile(element) ?: return null
 
         return when (element) {
-            is PsiFile -> createFileRunSettings(element, elementFile, templateRunSettings)
-            else -> null // TODO: All/Suite/Test run settings
+            is PsiFileSystemItem -> createFileRunSettings(element, elementFile, templateRunSettings)
+            else -> null // TODO: Suite/Test run settings
         }
     }
 
@@ -61,6 +62,11 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
                     templateRunSettings.copy(
                             scope = JasmineScope.SPEC_FILE,
                             specFile = elementFile.path
+                    )
+                } else if (element is JsonFile && JasmineUtil.isJasmineConfigFile(elementFile)) {
+                    templateRunSettings.copy(
+                            scope = JasmineScope.ALL,
+                            jasmineConfigFile = elementFile.path
                     )
                 } else {
                     return null
