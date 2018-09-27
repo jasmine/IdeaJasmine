@@ -12,6 +12,7 @@ data class JasmineRunSettings(
     var extraJasmineOptions : String = "",
     var jasmineExecutable: String = "bin/jasmine.js",
     var jasmineConfigFile : String = "",
-    var scope : JasmineScope = JasmineScope.SPEC_FILE,
-    var specFile : String = ""
+    var scope : JasmineScope = JasmineScope.ALL,
+    var specFile : String = "",
+    var testNames: List<String> = emptyList()
 )

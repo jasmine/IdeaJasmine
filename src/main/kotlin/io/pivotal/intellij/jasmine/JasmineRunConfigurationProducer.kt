@@ -2,6 +2,7 @@ package io.pivotal.intellij.jasmine
 
 import com.google.common.collect.ImmutableList
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.javascript.testFramework.jasmine.JasmineFileStructureBuilder
 import com.intellij.javascript.testing.JsTestRunConfigurationProducer
 import com.intellij.json.psi.JsonFile
 import com.intellij.lang.javascript.psi.JSFile
@@ -11,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.util.ObjectUtils
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import io.pivotal.intellij.jasmine.util.JasmineUtil
 
@@ -21,7 +23,18 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
         val thatRunSettings = runConfig.jasmineRunSettings
         val (_, thisRunSettings) = configureSettingsForElement(element, JasmineRunSettings()) ?: return false
 
-        return thisRunSettings.scope == thatRunSettings.scope && thisRunSettings.specFile == thatRunSettings.specFile
+        if (thisRunSettings.scope != thatRunSettings.scope) {
+            return false
+        }
+
+        return when (thisRunSettings.scope) {
+            JasmineScope.ALL -> true
+            JasmineScope.SPEC_FILE -> thisRunSettings.specFile == thatRunSettings.specFile
+            JasmineScope.SUITE, JasmineScope.TEST -> {
+                thisRunSettings.specFile == thatRunSettings.specFile &&
+                        thisRunSettings.testNames == thatRunSettings.testNames
+            }
+        }
     }
 
     override fun setupConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
@@ -47,7 +60,7 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
 
         return when (element) {
             is PsiFileSystemItem -> createFileRunSettings(element, elementFile, templateRunSettings)
-            else -> null // TODO: Suite/Test run settings
+            else -> createSuiteOrTestRunSettings(element, elementFile, templateRunSettings)
         }
     }
 
@@ -73,5 +86,26 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
                 }
 
         return Pair(element, runSettings)
+    }
+
+    private fun createSuiteOrTestRunSettings(
+            element: PsiElement,
+            elementFile: VirtualFile,
+            templateRunSettings: JasmineRunSettings
+    ): Pair<PsiElement, JasmineRunSettings>? {
+        val jsFile = ObjectUtils.tryCast(element.containingFile, JSFile::class.java) ?: return null
+        val textRange = element.textRange ?: return null
+
+        val jasmineStructure = JasmineFileStructureBuilder.getInstance().fetchCachedTestFileStructure(jsFile)
+        val testElementPath = jasmineStructure.findTestElementPath(textRange) ?: return null
+
+        val isSuite = testElementPath.testName == null
+        val runTestElementSettings = templateRunSettings.copy(
+                scope = if (isSuite) JasmineScope.SUITE else JasmineScope.TEST,
+                specFile = elementFile.path,
+                testNames = if (isSuite) testElementPath.suiteNames else testElementPath.allNames
+        )
+
+        return Pair(testElementPath.testElement, runTestElementSettings)
     }
 }

@@ -59,8 +59,32 @@ class JasmineRunConfigurationProducerTest : LightPlatformCodeInsightFixtureTestC
         assertNull(setupRunConfiguration(myFixture.configureByFile("App.js")))
     }
 
+    fun `test creates suite scope configuration from jasmine suite element`() {
+        myFixture.copyDirectoryToProject("test-project", "")
 
-    fun `test configuration not compatible when context cannot setup configuration`() {
+        val specFile = myFixture.configureByFile("spec/CaretOnSuite.spec.js")
+        val config = setupRunConfigurationAtCaret(specFile)!!
+
+        val runSettings = config.jasmineRunSettings
+        assertEquals(JasmineScope.SUITE, runSettings.scope)
+        assertEquals("/src/spec/CaretOnSuite.spec.js", runSettings.specFile)
+        assertEquals(listOf("app", "suite"), runSettings.testNames)
+    }
+
+    fun `test creates test scope configuration from jasmine test element`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+
+        val specFile = myFixture.configureByFile("spec/CaretOnTest.spec.js")
+        val config = setupRunConfigurationAtCaret(specFile)!!
+
+        val runSettings = config.jasmineRunSettings
+        assertEquals(JasmineScope.TEST, runSettings.scope)
+        assertEquals("/src/spec/CaretOnTest.spec.js", runSettings.specFile)
+        assertEquals(listOf("app", "suite", "test"), runSettings.testNames)
+    }
+
+
+    fun `test existing configuration not compatible when context cannot setup configuration`() {
         myFixture.copyDirectoryToProject("test-project", "")
 
         val jsFileContext = ConfigurationContext(myFixture.configureByFile("App.js"))
@@ -68,29 +92,95 @@ class JasmineRunConfigurationProducerTest : LightPlatformCodeInsightFixtureTestC
         assertConfigNotFromContext(createConfiguration(), jsFileContext)
     }
 
-    fun `test configuration not compatible when context is different scope`() {
+    fun `test existing configuration not compatible when context is different scope`() {
         myFixture.copyDirectoryToProject("test-project", "")
 
-        val specFileConfig = createConfiguration(JasmineRunSettings(
+        val existingSpecFileConfig = createConfiguration(JasmineRunSettings(
                 scope = JasmineScope.SPEC_FILE
         ))
 
-        val allScopeContext = ConfigurationContext(myFixture.configureByFile("spec/support/jasmine.json"))
+        val allTestsContext = ConfigurationContext(myFixture.configureByFile("spec/support/jasmine.json"))
 
-        assertConfigNotFromContext(specFileConfig, allScopeContext)
+        assertConfigNotFromContext(existingSpecFileConfig, allTestsContext)
     }
 
-    fun `test configuration compatible when context is same spec file`() {
+    fun `test existing configuration not compatible when different spec files`() {
         myFixture.copyDirectoryToProject("test-project", "")
 
-        val existingConfig = createConfiguration(JasmineRunSettings(
-                specFile = "/src/App.spec.js"
+        val existingSpecFileConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.SPEC_FILE,
+                specFile = "different.spec.js"
+        ))
+        val existingSuiteConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.SUITE,
+                specFile = "different.spec.js"
+        ))
+        val existingTestConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.TEST,
+                specFile = "different.spec.js"
         ))
 
-        val specFile = myFixture.configureByText("App.spec.js", """<caret>describe("suite", function(){})""")
-        val specFileContext = ConfigurationContext(specFile)
+        val specFileContext = ConfigurationContext(myFixture.configureByFile("spec/App.spec.js"))
+        val suiteContext = ConfigurationContext(myFixture.configureByFile("spec/CaretOnSuite.spec.js").elementAtCaret())
+        val testContext = ConfigurationContext(myFixture.configureByFile("spec/CaretOnTest.spec.js").elementAtCaret())
 
-        assertConfigFromContext(existingConfig, specFileContext)
+        assertConfigNotFromContext(existingSpecFileConfig, specFileContext)
+        assertConfigNotFromContext(existingSuiteConfig, suiteContext)
+        assertConfigNotFromContext(existingTestConfig, testContext)
+    }
+
+    fun `test existing configuration not compatible when different test names`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+
+        val existingSuiteConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.SUITE,
+                specFile = "/src/spec/CaretOnSuite.spec.js",
+                testNames = listOf("different suite")
+        ))
+        val existingTestConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.TEST,
+                specFile = "/src/spec/CaretOnTest.spec.js",
+                testNames = listOf("different test")
+        ))
+
+        val suiteContext = ConfigurationContext(myFixture.configureByFile("spec/CaretOnSuite.spec.js").elementAtCaret())
+        val testContext = ConfigurationContext(myFixture.configureByFile("spec/CaretOnTest.spec.js").elementAtCaret())
+
+        assertConfigNotFromContext(existingSuiteConfig, suiteContext)
+        assertConfigNotFromContext(existingTestConfig, testContext)
+    }
+
+    fun `test existing configuration compatible when both all scope`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+
+        val allTestsConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.ALL
+        ))
+
+        val configContext = ConfigurationContext(myFixture.configureByFile("spec/support/jasmine.json"))
+
+        assertConfigFromContext(allTestsConfig, configContext)
+    }
+
+    fun `test existing configuration compatible when context is same test`() {
+        myFixture.copyDirectoryToProject("test-project", "")
+
+        val suiteConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.SUITE,
+                specFile = "/src/spec/CaretOnSuite.spec.js",
+                testNames = listOf("app", "suite")
+        ))
+        val suiteContext = ConfigurationContext(myFixture.configureByFile("spec/CaretOnSuite.spec.js").elementAtCaret())
+
+        val testConfig = createConfiguration(JasmineRunSettings(
+                scope = JasmineScope.TEST,
+                specFile = "/src/spec/CaretOnTest.spec.js",
+                testNames = listOf("app", "suite", "test")
+        ))
+        val testContext = ConfigurationContext(myFixture.configureByFile("spec/CaretOnTest.spec.js").elementAtCaret())
+
+        assertConfigFromContext(suiteConfig, suiteContext)
+        assertConfigFromContext(testConfig, testContext)
     }
 
     private fun setupRunConfigurationAtCaret(specFile: PsiFile): JasmineRunConfiguration? {
