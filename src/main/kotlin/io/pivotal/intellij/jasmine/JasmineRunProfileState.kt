@@ -11,6 +11,7 @@ import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.javascript.testFramework.util.JsTestFqn
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.PathUtil
@@ -24,7 +25,7 @@ class JasmineRunProfileState(private var project: Project,
                              private var executor: Executor,
                              environment: ExecutionEnvironment) : CommandLineState(environment) {
 
-    override fun startProcess(): ProcessHandler {
+    public override fun startProcess(): ProcessHandler {
         val runSettings = runConfig.jasmineRunSettings
         val interpreter = runSettings.nodeJs.resolveAsLocal(project)
         val commandLine = GeneralCommandLine()
@@ -53,8 +54,12 @@ class JasmineRunProfileState(private var project: Project,
 
         commandLine.addParameter("--reporter=${findReporterPath()}")
 
-        if (!StringUtils.isBlank(runSettings.specFile)) {
+        if (runSettings.specFile.isNotBlank()) {
             commandLine.addParameter(runSettings.specFile)
+        }
+
+        if (runSettings.testNames.isNotEmpty()) {
+            commandLine.addParameter("--filter=${JsTestFqn.getPresentableName(runSettings.testNames)}")
         }
 
         val processHandler = KillableColoredProcessHandler(commandLine)
