@@ -3,15 +3,18 @@ package io.pivotal.intellij.jasmine
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.LocatableConfigurationBase
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreter
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.testFramework.util.JsTestFqn
 import com.intellij.openapi.project.Project
 import com.intellij.util.PathUtil
+import com.intellij.util.io.isFile
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import io.pivotal.intellij.jasmine.util.JasmineSerializationUtil
 import org.jdom.Element
+import java.nio.file.Paths
 
 
 class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) : LocatableConfigurationBase(project, factory, name) {
@@ -37,7 +40,28 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
     }
 
     override fun checkConfiguration() {
+        val scope = jasmineRunSettings.scope
+
+        if (scope.requiresSpecFile()) {
+            when {
+                jasmineRunSettings.specFile.isBlank() -> throw RuntimeConfigurationError("Unspecified spec file")
+                !Paths.get(jasmineRunSettings.specFile).isFile() -> throw RuntimeConfigurationError("No such spec file")
+            }
+        }
+
+        if (scope.requiresTestNames() && jasmineRunSettings.testNames.isEmpty()) {
+            throw RuntimeConfigurationError("Unspecified ${scope.name.toLowerCase()} name")
+        }
+
         selectedJasminePackage().validateForRunConfiguration("jasmine")
+    }
+
+    private fun JasmineScope.requiresSpecFile(): Boolean {
+        return this == JasmineScope.SPEC_FILE || this == JasmineScope.SUITE || this == JasmineScope.TEST
+    }
+
+    private fun JasmineScope.requiresTestNames(): Boolean {
+        return this == JasmineScope.SUITE || this == JasmineScope.TEST
     }
 
     override fun suggestedName(): String? = when (jasmineRunSettings.scope) {
