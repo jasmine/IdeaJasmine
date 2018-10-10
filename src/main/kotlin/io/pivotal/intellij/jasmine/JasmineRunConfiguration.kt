@@ -20,7 +20,7 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
     fun selectedJasminePackage(): NodePackage {
         if (_jasminePackage == null) {
             val interpreter = NodeJsLocalInterpreter.tryCast(jasmineRunSettings.nodeJs.resolve(project))
-            val pkg = NodePackage.findPreferredPackage(project, "Jasmine", interpreter)
+            val pkg = NodePackage.findPreferredPackage(project, "jasmine", interpreter)
             _jasminePackage = pkg
             return pkg
         }
@@ -29,6 +29,10 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
 
     fun setJasminePackage(nodePackage: NodePackage) {
         _jasminePackage = nodePackage
+    }
+
+    override fun checkConfiguration() {
+        selectedJasminePackage().validateForRunConfiguration("jasmine")
     }
 }
 
