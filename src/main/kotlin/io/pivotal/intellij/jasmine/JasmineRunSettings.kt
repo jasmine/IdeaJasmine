@@ -2,6 +2,7 @@ package io.pivotal.intellij.jasmine
 
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
+import io.pivotal.intellij.jasmine.scope.JasmineScope
 
 data class JasmineRunSettings(
     var nodeJs : NodeJsInterpreterRef = NodeJsInterpreterRef.createProjectRef(),
@@ -11,5 +12,7 @@ data class JasmineRunSettings(
     var extraJasmineOptions : String = "",
     var jasmineExecutable: String = "bin/jasmine.js",
     var jasmineConfigFile : String = "",
-    var specFile : String = ""
+    var scope : JasmineScope = JasmineScope.ALL,
+    var specFile : String = "",
+    var testNames: List<String> = emptyList()
 )

@@ -4,7 +4,6 @@ import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBro
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.json.JsonFileType
-import com.intellij.lang.javascript.library.JSLibraryUtil
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -17,11 +16,14 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.ui.components.fields.ExpandableTextField
-import com.intellij.util.ui.ComponentWithEmptyText
-import com.intellij.util.ui.FormBuilder
-import com.intellij.util.ui.SwingHelper
-import javax.swing.JComponent
-import javax.swing.JPanel
+import com.intellij.util.ui.*
+import io.pivotal.intellij.jasmine.scope.JasmineScope
+import io.pivotal.intellij.jasmine.scope.JasmineScopeView
+import io.pivotal.intellij.jasmine.util.JasmineUtil
+import java.awt.BorderLayout
+import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import javax.swing.*
 
 
 class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<JasmineRunConfiguration>() {
@@ -33,6 +35,12 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
     private var jasmineExecutableField = createJasmineExecutableField()
     private var jasmineOptionsField = createJasmineOptionsField()
     private var jasmineConfigFileField = createJasmineConfigFileField()
+    private var scopeViewPanel = JPanel(BorderLayout())
+
+    private var scopeButtons = mutableMapOf<JasmineScope, JRadioButton>()
+    private var scopeViews = mutableMapOf<JasmineScope, JasmineScopeView>()
+
+    private var longestLabelWidth = JLabel("Environment variables").preferredSize.width
 
     private var rootForm: JPanel
 
@@ -48,6 +56,9 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
                 .addLabeledComponent("Jasmine executable", jasmineExecutableField)
                 .addLabeledComponent("Jasmine &config file", jasmineConfigFileField)
                 .addLabeledComponent("E&xtra Jasmine options", jasmineOptionsField)
+                .addSeparator()
+                .addComponent(createScopeRadioButtonPanel())
+                .addComponent(scopeViewPanel)
                 .panel
     }
 
@@ -93,7 +104,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
 
         SwingHelper.addHistoryOnExpansion(innerField) {
             innerField.history = emptyList<String>()
-            listPossibleConfigFilesInProject().map {  file ->
+            listPossibleConfigFilesInProject().map { file ->
                 FileUtil.toSystemDependentName(file.path)
             }.sorted()
         }
@@ -115,11 +126,59 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
 
         val files = FileTypeIndex.getFiles(jsonFileType, scope)
 
-        return files.filter { it != null && it.isValid && !it.isDirectory && isJasmineConfigFile(it.nameSequence) && !JSLibraryUtil.isProbableLibraryFile(it) }
+        return files.filter { JasmineUtil.isJasmineConfigFile(it) }
     }
 
-    private fun isJasmineConfigFile(filename: CharSequence): Boolean {
-        return filename.startsWith("jasmine", true)
+    private fun createScopeRadioButtonPanel(): JPanel {
+        val testScopePanel = JPanel(FlowLayout(FlowLayout.CENTER, JBUI.scale(40), 0))
+        val buttonGroup = ButtonGroup()
+
+        JasmineScope.values().forEach { scope ->
+            val radioButton = JRadioButton(UIUtil.removeMnemonic(scope.label))
+
+            val index = UIUtil.getDisplayMnemonicIndex(scope.label)
+            if (index != -1) {
+                radioButton.setMnemonic(scope.label[index + 1])
+                radioButton.displayedMnemonicIndex = index
+            }
+
+            radioButton.addActionListener { setTestScope(scope) }
+
+            scopeButtons[scope] = radioButton
+            testScopePanel.add(radioButton)
+            buttonGroup.add(radioButton)
+        }
+
+        return testScopePanel
+    }
+
+    private fun setTestScope(scope: JasmineScope) {
+        val scopeView = getScopeView(scope)
+        scopeButtons[scope]?.isSelected = true
+        scopeViewPanel.removeAll()
+        scopeViewPanel.add(scopeView.getComponent(), BorderLayout.CENTER)
+        scopeViewPanel.revalidate()
+        scopeViewPanel.repaint()
+    }
+
+    private fun getScopeView(scope: JasmineScope) = scopeViews.getOrPut(scope) {
+        val scopeView = scope.createView(project)
+
+        // align scope view fields with other fields in editor
+        scopeView.getComponent().add(
+                Box.createHorizontalStrut(longestLabelWidth),
+                GridBagConstraints(
+                        0, GridBagConstraints.RELATIVE,
+                        1, 1,
+                        0.0, 0.0,
+                        GridBagConstraints.EAST,
+                        GridBagConstraints.NONE,
+                        JBUI.insetsRight(UIUtil.DEFAULT_HGAP),
+                        0, 0
+                )
+        )
+
+        scopeView
     }
 
     override fun createEditor(): JComponent = rootForm
@@ -133,6 +192,12 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
                 jasmineExecutable = jasmineExecutableField.text,
                 jasmineConfigFile = jasmineConfigFileField.text,
                 extraJasmineOptions = jasmineOptionsField.text)
+
+        scopeButtons.entries.find { it.value.isSelected }?.run {
+            config.jasmineRunSettings.scope = key
+            getScopeView(key).applyTo(config.jasmineRunSettings)
+        }
+
         config.setJasminePackage(jasminePackageField.selected)
     }
 
@@ -146,5 +211,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
         jasmineExecutableField.text = runSettings.jasmineExecutable
         jasmineConfigFileField.text = runSettings.jasmineConfigFile
         jasmineOptionsField.text = runSettings.extraJasmineOptions
+        setTestScope(runSettings.scope)
+        getScopeView(runSettings.scope).resetFrom(runSettings)
     }
 }
