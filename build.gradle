@@ -27,7 +27,9 @@ prepareSandbox {
 }
 
 publishPlugin {
-    token System.getenv('IJ_PUBLISH_TOKEN')
+    /* token System.getenv('IJ_PUBLISH_TOKEN') */
+    username System.getenv('IJ_PUBLISH_USER')
+    password System.getenv('IJ_PUBLISH_PASSWORD')
     channels publishChannels
 }
 
