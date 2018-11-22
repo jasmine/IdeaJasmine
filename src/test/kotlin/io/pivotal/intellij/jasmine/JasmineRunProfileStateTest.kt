@@ -6,8 +6,8 @@ import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
 import io.pivotal.intellij.jasmine.scope.JasmineScope
-import junit.framework.TestCase
-import org.fest.assertions.Assertions.assertThat
+import org.hamcrest.CoreMatchers.*
+import org.junit.Assert.assertThat
 
 class JasmineRunProfileStateTest : LightPlatformCodeInsightFixtureTestCase() {
 
@@ -37,9 +37,9 @@ class JasmineRunProfileStateTest : LightPlatformCodeInsightFixtureTestCase() {
                 specFile = testFilePath
         ))
 
-        assertThat(testFileCommand).endsWith(testFilePath)
-        assertThat(suiteCommand).endsWith(testFilePath)
-        assertThat(testCommand).endsWith(testFilePath)
+        assertThat(testFileCommand, endsWith(testFilePath))
+        assertThat(suiteCommand, endsWith(testFilePath))
+        assertThat(testCommand, endsWith(testFilePath))
     }
 
     fun `test test names added as filter`() {
@@ -52,8 +52,8 @@ class JasmineRunProfileStateTest : LightPlatformCodeInsightFixtureTestCase() {
                 testNames = listOf("App", "spec", "name with spaces")
         ))
 
-        assertThat(suiteCommand).endsWith("\"--filter=App.spec.name with spaces\"")
-        assertThat(testCommand).endsWith("\"--filter=App.spec.name with spaces\"")
+        assertThat(suiteCommand, endsWith("\"--filter=App.spec.name with spaces\""))
+        assertThat(testCommand, endsWith("\"--filter=App.spec.name with spaces\""))
     }
 
     fun `test filter not added when empty test names`() {
@@ -62,7 +62,7 @@ class JasmineRunProfileStateTest : LightPlatformCodeInsightFixtureTestCase() {
                 testNames = listOf()
         ))
 
-        assertThat(noFilterCommand).doesNotContain("--filter")
+        assertThat(noFilterCommand, not(containsString("--filter")))
     }
 
     private fun commandLineFromSettings(runSettings: JasmineRunSettings = JasmineRunSettings()): String {
