@@ -17,7 +17,8 @@ import org.jdom.Element
 import java.nio.file.Paths
 
 
-class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) : LocatableConfigurationBase(project, factory, name) {
+class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String)
+    : LocatableConfigurationBase<Any>(project, factory, name) {
     var jasmineRunSettings = JasmineRunSettings()
     private var _jasminePackage: NodePackage? = null
 

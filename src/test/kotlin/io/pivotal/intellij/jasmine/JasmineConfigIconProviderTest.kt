@@ -3,7 +3,8 @@ package io.pivotal.intellij.jasmine
 import com.intellij.json.JsonFileType
 import com.intellij.openapi.util.IconLoader.CachedImageIcon
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
-import org.fest.assertions.Assertions.assertThat
+import org.hamcrest.CoreMatchers.endsWith
+import org.junit.Assert.assertThat
 
 class JasmineConfigIconProviderTest : LightPlatformCodeInsightFixtureTestCase() {
 
@@ -12,7 +13,7 @@ class JasmineConfigIconProviderTest : LightPlatformCodeInsightFixtureTestCase() 
 
         val jasmineIcon = JasmineConfigIconProvider().getIcon(jasmineConfigFile, 0) as CachedImageIcon
 
-        assertThat(jasmineIcon.toString()).endsWith("/icons/jasmine.png")
+        assertThat(jasmineIcon.toString(), endsWith("/icons/jasmine.png"))
     }
 
     fun `test does not show jasmine icon on other files`() {
