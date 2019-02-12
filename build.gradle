@@ -14,6 +14,7 @@ intellij {
 
 patchPluginXml {
     sinceBuild "183"
+    changeNotes file("release_notes/" + version + ".md").text
 }
 
 repositories {
