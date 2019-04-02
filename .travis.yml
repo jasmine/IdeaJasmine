@@ -7,7 +7,7 @@ install:
   - echo "Override default Travis install step to avoid unnecessary './gradlew assemble'."
 
 script:
-  - ./gradlew build
+  - ./gradlew build --info
 
 deploy:
   - provider: releases

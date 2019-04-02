@@ -25,7 +25,7 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
     }
 
     fun `test configuration error when jasmine package not set`() {
-        assertConfigurationErrorEquals("Invalid jasmine package: no such directory", subject)
+        assertConfigurationErrorEquals("Unspecified jasmine package", subject)
     }
 
     fun `test configuration error when spec file not set`() {
