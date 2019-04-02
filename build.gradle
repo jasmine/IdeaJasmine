@@ -10,11 +10,10 @@ intellij {
     version ideaVersion
     pluginName name
     plugins 'JavaScriptLanguage', 'CSS'
-    sameSinceUntilBuild true
+    updateSinceUntilBuild false
 }
 
 patchPluginXml {
-    sinceBuild "183"
     changeNotes file("release_notes/" + version + ".md").text
 }
 
