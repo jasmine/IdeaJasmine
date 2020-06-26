@@ -1,9 +1,0 @@
-IdeaJasmine*.zip
-out/
-lib/
-.packaging.gradle/
-build/
-.sandbox/
-.gradle/
-*.iml
-.idea/
