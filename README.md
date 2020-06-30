@@ -1,4 +1,4 @@
-# Jasmine IntelliJ Plugin  [![Build Status](https://travis-ci.org/jasmine/IdeaJasmine.svg?branch=master)](https://travis-ci.org/jasmine/IdeaJasmine)
+# Jasmine IntelliJ Plugin  [![Build Status](https://travis-ci.org/jasmine/IdeaJasmine.svg?branch=main)](https://travis-ci.org/jasmine/IdeaJasmine)
 
 This adds a new run configuration to IntelliJ (and IntelliJ based IDEs) that runs Jasmine and displays the results in the test console.
 
