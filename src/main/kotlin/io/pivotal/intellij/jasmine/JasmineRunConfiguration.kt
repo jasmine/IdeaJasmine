@@ -5,6 +5,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreter
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.testFramework.util.JsTestFqn
@@ -18,7 +19,7 @@ import java.nio.file.Paths
 
 
 class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String)
-    : LocatableConfigurationBase<Any>(project, factory, name) {
+    : LocatableConfigurationBase<Any>(project, factory, name), NodeDebugRunConfiguration {
     var jasmineRunSettings = JasmineRunSettings()
     private var _jasminePackage: NodePackage? = null
 

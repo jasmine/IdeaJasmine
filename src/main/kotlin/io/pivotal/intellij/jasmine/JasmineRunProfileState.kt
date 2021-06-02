@@ -31,7 +31,7 @@ class JasmineRunProfileState(private var project: Project,
         val commandLine = GeneralCommandLine()
 
         if (StringUtils.isBlank(runSettings.workingDir)) {
-            commandLine.withWorkDirectory(project.baseDir.path)
+            commandLine.withWorkDirectory(project.basePath)
         } else {
             commandLine.withWorkDirectory(runSettings.workingDir)
         }
