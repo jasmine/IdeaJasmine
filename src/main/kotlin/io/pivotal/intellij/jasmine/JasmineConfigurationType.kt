@@ -10,6 +10,7 @@ import icons.JSJasmineIcons
 class JasmineConfigurationType : ConfigurationTypeBase("JavascriptTestRunnerJasmine", "Jasmine", "Jasmine", JSJasmineIcons.Jasmine), DumbAware {
     init {
         addFactory(object : ConfigurationFactory(this) {
+            override fun getId() = type.id
             override fun createTemplateConfiguration(project: Project) = JasmineRunConfiguration(project, this, "Jasmine")
             override fun isConfigurationSingletonByDefault() = true
             override fun canConfigurationBeSingleton() = false
