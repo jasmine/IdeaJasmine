@@ -1,4 +1,4 @@
-# Jasmine IntelliJ Plugin  [![Build Status](https://travis-ci.com/jasmine/IdeaJasmine.svg?branch=main)](https://travis-ci.com/jasmine/IdeaJasmine)
+# Jasmine IntelliJ Plugin  [![CircleCI](https://circleci.com/gh/jasmine/IdeaJasmine/tree/main.svg?style=svg)](https://circleci.com/gh/jasmine/IdeaJasmine/tree/main)
 
 This adds a new run configuration to IntelliJ (and IntelliJ based IDEs) that runs Jasmine and displays the results in the test console.
 
@@ -8,6 +8,7 @@ This adds a new run configuration to IntelliJ (and IntelliJ based IDEs) that run
 1. In your IDE preferences, go to the "Plugins" node  
     * You can install it directly from [jetbrains](https://plugins.jetbrains.com/plugin/10449-jasmine)
     * Or download from [release page](https://github.com/jasmine/IdeaJasmine/releases) and "Install plugin from disk"
+    * If you really want to be on the cutting edge, you can download the build artifact from the latest build [on Circle CI](https://app.circleci.com/pipelines/github/jasmine/IdeaJasmine?branch=main)
 2. Restart your IDE
 
 ### Configure
