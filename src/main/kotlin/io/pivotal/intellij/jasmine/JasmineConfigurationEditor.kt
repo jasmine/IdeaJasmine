@@ -45,7 +45,6 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
     private var rootForm: JPanel
 
     init {
-        nodeOptionsField.dialogCaption = "Node Options"
         rootForm = FormBuilder()
                 .setAlignLabelOnRight(false)
                 .addLabeledComponent("Node &interpreter", nodeJsInterpreterField)

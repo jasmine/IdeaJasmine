@@ -4,10 +4,10 @@ import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.testFramework.LightPlatformTestCase
-import com.intellij.util.JDOMCompare
 import io.pivotal.intellij.jasmine.JasmineRunSettings
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import org.jdom.Element
+import org.jdom.output.XMLOutputter
 
 class JasmineSerializationUtilTest : LightPlatformTestCase() {
 
@@ -102,8 +102,8 @@ class JasmineSerializationUtilTest : LightPlatformTestCase() {
     }
 
     private fun assertEquals(expected: Element, actual: Element) {
-        assertTrue("Elements not equal: ${JDOMCompare.diffElements(expected, actual)}",
-                JDOMUtil.areElementsEqual(expected, actual))
+        val outputter = XMLOutputter()
+        assertEquals(outputter.outputString(expected), outputter.outputString(actual))
     }
 
     fun `test reads run settings`() {

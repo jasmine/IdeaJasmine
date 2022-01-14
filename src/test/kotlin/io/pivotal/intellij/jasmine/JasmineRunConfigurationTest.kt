@@ -1,13 +1,13 @@
 package io.pivotal.intellij.jasmine
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.util.io.systemIndependentPath
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import java.io.File
 import java.nio.file.Files
 
-class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
+class JasmineRunConfigurationTest : BasePlatformTestCase() {
 
     private lateinit var subject: JasmineRunConfiguration
 
@@ -19,6 +19,12 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
     }
 
     fun `test resolves jasmine package`() {
+        // Jasmine needs to be listed as a dependency of the project, not just be available
+        myFixture.addFileToProject("package.json", """{
+            "dependencies": {
+              "jasmine": "*"
+            }
+        }""")
         myFixture.addFileToProject("node_modules/jasmine/package.json", "")
 
         assertEquals("/src/node_modules/jasmine", subject.selectedJasminePackage().systemIndependentPath)
@@ -41,30 +47,30 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
 
     fun `test configuration error when spec file is not a file`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.SPEC_FILE,
-                specFile = "doesnotexist"
+            scope = JasmineScope.SPEC_FILE,
+            specFile = "doesnotexist"
         )
         assertConfigurationErrorEquals("No such spec file", subject)
 
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.SPEC_FILE,
-                specFile = Files.createTempDirectory("temp-dir").systemIndependentPath
+            scope = JasmineScope.SPEC_FILE,
+            specFile = Files.createTempDirectory("temp-dir").systemIndependentPath
         )
         assertConfigurationErrorEquals("No such spec file", subject)
     }
 
     fun `test configuration error when suite name not set`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.SUITE,
-                specFile = File.createTempFile("App.spec", ".js").absolutePath
+            scope = JasmineScope.SUITE,
+            specFile = File.createTempFile("App.spec", ".js").absolutePath
         )
         assertConfigurationErrorEquals("Unspecified suite name", subject)
     }
 
     fun `test configuration error when test name not set`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.TEST,
-                specFile = File.createTempFile("App.spec", ".js").absolutePath
+            scope = JasmineScope.TEST,
+            specFile = File.createTempFile("App.spec", ".js").absolutePath
         )
         assertConfigurationErrorEquals("Unspecified test name", subject)
     }
@@ -88,8 +94,8 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
 
     fun `test suggested and action name is file name for file scope`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.SPEC_FILE,
-                specFile = "spec/App.spec.js"
+            scope = JasmineScope.SPEC_FILE,
+            specFile = "spec/App.spec.js"
         )
         subject.setGeneratedName()
 
@@ -99,8 +105,8 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
 
     fun `test suggested name is full test name for suite scope`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.SUITE,
-                testNames = listOf("top suite", "nested suite")
+            scope = JasmineScope.SUITE,
+            testNames = listOf("top suite", "nested suite")
         )
 
         assertEquals("top suite.nested suite", subject.suggestedName())
@@ -108,8 +114,8 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
 
     fun `test suggested name is full test name for test scope`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.TEST,
-                testNames = listOf("suite name", "test name")
+            scope = JasmineScope.TEST,
+            testNames = listOf("suite name", "test name")
         )
 
         assertEquals("suite name.test name", subject.suggestedName())
@@ -117,8 +123,8 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
 
     fun `test action name is suite name for suite scope`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.SUITE,
-                testNames = listOf("top suite", "nested suite")
+            scope = JasmineScope.SUITE,
+            testNames = listOf("top suite", "nested suite")
         )
         subject.setGeneratedName()
 
@@ -127,8 +133,8 @@ class JasmineRunConfigurationTest : LightPlatformCodeInsightFixtureTestCase() {
 
     fun `test action name is test name for test scope`() {
         subject.jasmineRunSettings = JasmineRunSettings(
-                scope = JasmineScope.TEST,
-                testNames = listOf("suite name", "test name")
+            scope = JasmineScope.TEST,
+            testNames = listOf("suite name", "test name")
         )
         subject.setGeneratedName()
 

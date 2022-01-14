@@ -198,11 +198,11 @@ class JasmineRunConfigurationProducerTest : LightPlatformCodeInsightFixtureTestC
         return this.findElementAt(myFixture.caretOffset)!!
     }
 
-    private fun assertConfigFromContext(config: JasmineRunConfiguration?, context: ConfigurationContext) {
+    private fun assertConfigFromContext(config: JasmineRunConfiguration, context: ConfigurationContext) {
         assertTrue(configProducer.isConfigurationFromContext(config, context))
     }
 
-    private fun assertConfigNotFromContext(config: JasmineRunConfiguration?, context: ConfigurationContext) {
+    private fun assertConfigNotFromContext(config: JasmineRunConfiguration, context: ConfigurationContext) {
         assertFalse(configProducer.isConfigurationFromContext(config, context))
     }
 

@@ -13,7 +13,7 @@ class JasmineConfigIconProviderTest : LightPlatformCodeInsightFixtureTestCase() 
 
         val jasmineIcon = JasmineConfigIconProvider().getIcon(jasmineConfigFile, 0) as CachedImageIcon
 
-        assertThat(jasmineIcon.toString(), endsWith("/icons/jasmine.png"))
+        assertThat(jasmineIcon.originalPath.toString(), endsWith("/icons/jasmine.png"))
     }
 
     fun `test does not show jasmine icon on other files`() {

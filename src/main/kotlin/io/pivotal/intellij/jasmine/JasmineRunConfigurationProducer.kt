@@ -2,6 +2,7 @@ package io.pivotal.intellij.jasmine
 
 import com.google.common.collect.ImmutableList
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.javascript.testFramework.jasmine.JasmineFileStructureBuilder
 import com.intellij.javascript.testing.JsTestRunConfigurationProducer
 import com.intellij.json.psi.JsonFile
@@ -16,7 +17,11 @@ import com.intellij.util.ObjectUtils
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import io.pivotal.intellij.jasmine.util.JasmineUtil
 
-class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRunConfiguration>(JasmineConfigurationType.getInstance(), ImmutableList.of("jasmine")) {
+class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRunConfiguration>(ImmutableList.of("jasmine")) {
+    override fun getConfigurationFactory(): ConfigurationFactory {
+        return JasmineConfigurationType.getInstance().configurationFactories.get(0)
+    }
+
     override fun isConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext): Boolean {
         val element = context.psiLocation ?: return false
 
@@ -40,7 +45,7 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
     override fun setupConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
         val element = context.psiLocation ?: return false
 
-        if (!isTestRunnerPackageAvailableFor(element)) {
+        if (!isTestRunnerPackageAvailableFor(element, context)) {
             return false
         }
 

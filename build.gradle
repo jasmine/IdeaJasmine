@@ -1,20 +1,27 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.3.21"
-    id "org.jetbrains.intellij" version "0.4.2"
+    id "org.jetbrains.kotlin.jvm" version "1.6.10"
+    id "org.jetbrains.intellij" version "1.3.0"
 }
 
 apply plugin: "kotlin"
 apply plugin: 'org.jetbrains.intellij'
 
 intellij {
-    version ideaVersion
-    pluginName name
-    plugins 'JavaScriptLanguage', 'CSS'
-    updateSinceUntilBuild false
+    version.set(ideaVersion)
+    pluginName.set(name)
+    plugins.set(['JavaScriptLanguage', 'CSS'])
+    updateSinceUntilBuild.set(false)
+}
+
+def latestReleaseNotesFile() {
+    return fileTree("release_notes")
+        .getFiles()
+        .sort()
+        .last()
 }
 
 patchPluginXml {
-    changeNotes file("release_notes/" + version + ".md").text
+    changeNotes.set(provider { latestReleaseNotesFile().text })
 }
 
 repositories {
@@ -23,17 +30,6 @@ repositories {
 
 prepareSandbox {
     from('src/main/resources/intellij_reporter.js') {
-        into "${intellij.pluginName}/lib/"
+        into "${intellij.pluginName.get()}/lib/"
     }
-}
-
-publishPlugin {
-    /* token System.getenv('IJ_PUBLISH_TOKEN') */
-    username System.getenv('IJ_PUBLISH_USER')
-    password System.getenv('IJ_PUBLISH_PASSWORD')
-    channels publishChannels
-}
-
-dependencies {
-    compile("org.jetbrains.kotlin:kotlin-stdlib")
 }
