@@ -24,6 +24,9 @@ IntelliJ dependencies and packaging.
 
 The code for the plugin is written in [Kotlin](http://kotlinlang.org/)
 
+Local builds expect to be run on JDK-11, but higher might also work. Managing multiple Java versions is possible
+with something like [SDKMan](https://sdkman.io/) 
+
 ### Building
 Build the plugin with:  
 `./gradlew build`
