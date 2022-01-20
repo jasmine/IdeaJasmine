@@ -70,7 +70,6 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
 
     private fun createJasmineOptionsField(): RawCommandLineEditor {
         val editor = RawCommandLineEditor()
-        editor.dialogCaption = "Extra Jasmine Options"
         val field = editor.textField
         if (field is ExpandableTextField) {
             field.putClientProperty("monospaced", false)
