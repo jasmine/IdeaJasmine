@@ -4,18 +4,25 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import org.hamcrest.CoreMatchers.*
 import org.junit.Assert.assertThat
+import java.io.File
 
-class JasmineRunProfileStateTest : LightPlatformCodeInsightFixtureTestCase() {
+class JasmineRunProfileStateTest : BasePlatformTestCase() {
 
     private var runExecutor = DefaultRunExecutor()
     private lateinit var configFactory: ConfigurationFactory
 
     public override fun setUp() {
         super.setUp()
+
+        val baseDir = File(project.basePath)
+
+        if (!baseDir.exists()) {
+            baseDir.mkdirs()
+        }
 
         runExecutor = DefaultRunExecutor()
         configFactory = JasmineConfigurationType.getInstance().configurationFactories[0]

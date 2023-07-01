@@ -5,11 +5,11 @@ import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import java.io.File
 
-class JasmineRunConfigurationProducerTest : LightPlatformCodeInsightFixtureTestCase() {
+class JasmineRunConfigurationProducerTest : BasePlatformTestCase() {
 
     private lateinit var configProducer: RunConfigurationProducer<JasmineRunConfiguration>
     private lateinit var configFactory: ConfigurationFactory
