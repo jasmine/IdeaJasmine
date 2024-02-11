@@ -45,10 +45,6 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
     override fun setupConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
         val element = context.psiLocation ?: return false
 
-        if (!isTestRunnerPackageAvailableFor(element, context)) {
-            return false
-        }
-
         val (testElement, runSettings) = configureSettingsForElement(element, runConfig.jasmineRunSettings) ?: return false
 
         runConfig.jasmineRunSettings = runSettings
