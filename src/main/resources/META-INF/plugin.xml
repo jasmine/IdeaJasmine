@@ -30,6 +30,7 @@
     <programRunner implementation="io.pivotal.intellij.jasmine.JasmineRunProgramRunner"/>
     <runConfigurationProducer implementation="io.pivotal.intellij.jasmine.JasmineRunConfigurationProducer"/>
     <iconProvider implementation="io.pivotal.intellij.jasmine.JasmineConfigIconProvider"/>
+    <notificationGroup id="Jasmine Plugin" displayType="BALLOON"/>
   </extensions>
 
   <actions>
