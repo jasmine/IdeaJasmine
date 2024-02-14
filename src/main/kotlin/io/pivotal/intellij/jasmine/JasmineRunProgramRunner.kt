@@ -8,7 +8,7 @@ import com.intellij.execution.runners.*
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 
-object JasmineRunProgramRunner : GenericProgramRunner<RunnerSettings>() {
+class JasmineRunProgramRunner : GenericProgramRunner<RunnerSettings>() {
     override fun getRunnerId() = "JasmineJavascriptTestRunnerRun"
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {

@@ -14,7 +14,7 @@ This adds a new run configuration to IntelliJ (and IntelliJ based IDEs) that run
 ### Configure
 1. In the "Run" menu, click on "Edit Configurations", there should be a new "Jasmine" default configuration
 1. Click the "+" to add a new configuration and select "Jasmine" as the template
-1. Fill in your NodeJS interpreter and select the correct Jasmine package and set any other options you want
+1. Fill in your Node.js interpreter and select the correct Jasmine package and set any other options you want
 1. Run your tests!
 
 ## Development
