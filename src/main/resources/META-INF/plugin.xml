@@ -5,6 +5,7 @@
   <vendor email="jasmine-js@googlegroups.com" url="http://jasmine.github.io">Jasmine</vendor>
 
   <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.json</depends>
   <depends>JavaScript</depends>
 
   <description><![CDATA[
