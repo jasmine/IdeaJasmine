@@ -1,13 +1,11 @@
 package io.pivotal.intellij.jasmine
 
-import com.google.common.collect.ImmutableList
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.javascript.testFramework.jasmine.JasmineFileStructureBuilder
-import com.intellij.javascript.testing.JsTestRunConfigurationProducer
+import com.intellij.javascript.testing.runConfiguration.JsTestRunConfigurationProducer
 import com.intellij.json.psi.JsonFile
 import com.intellij.lang.javascript.psi.JSFile
-import com.intellij.lang.javascript.psi.JSTestFileType
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -17,9 +15,10 @@ import com.intellij.util.ObjectUtils
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import io.pivotal.intellij.jasmine.util.JasmineUtil
 
-class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRunConfiguration>(ImmutableList.of("jasmine")) {
+class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRunConfiguration>() {
+
     override fun getConfigurationFactory(): ConfigurationFactory {
-        return JasmineConfigurationType.getInstance().configurationFactories.get(0)
+        return JasmineConfigurationType.getInstance().configurationFactories[0]
     }
 
     override fun isConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext): Boolean {
@@ -42,10 +41,19 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
         }
     }
 
+    override fun isTestRunnerAvailableFor(element: PsiElement): Boolean {
+        return true
+    }
+
     override fun setupConfigurationFromCompatibleContext(runConfig: JasmineRunConfiguration, context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
         val element = context.psiLocation ?: return false
 
-        val (testElement, runSettings) = configureSettingsForElement(element, runConfig.jasmineRunSettings) ?: return false
+        // Get the default template configuration
+        val defaultConfig = context.runManager.getConfigurationTemplate(configurationFactory).configuration as JasmineRunConfiguration
+        val templateSettings = defaultConfig.jasmineRunSettings
+        
+        // Use the template settings as the base for our new configuration
+        val (testElement, runSettings) = configureSettingsForElement(element, templateSettings) ?: return false
 
         runConfig.jasmineRunSettings = runSettings
         sourceElement.set(testElement)
@@ -72,15 +80,19 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
     ): Pair<PsiElement, JasmineRunSettings>? {
 
         val runSettings =
-                if (element is JSFile && element.testFileType == JSTestFileType.JASMINE) {
+                if (element is JSFile && JasmineUtil.isJasmineTestFile(element)) {
+                    // Preserve all template settings except for scope and specFile
                     templateRunSettings.copy(
                             scope = JasmineScope.SPEC_FILE,
                             specFile = elementFile.path
+                            // All other settings are preserved from the template
                     )
                 } else if (element is JsonFile && JasmineUtil.isJasmineConfigFile(elementFile)) {
+                    // Preserve all template settings except for scope and jasmineConfigFile
                     templateRunSettings.copy(
                             scope = JasmineScope.ALL,
                             jasmineConfigFile = elementFile.path
+                            // All other settings are preserved from the template
                     )
                 } else {
                     return null
@@ -101,10 +113,12 @@ class JasmineRunConfigurationProducer : JsTestRunConfigurationProducer<JasmineRu
         val testElementPath = jasmineStructure.findTestElementPath(textRange) ?: return null
 
         val isSuite = testElementPath.testName == null
+        // Preserve all template settings except for scope, specFile, and testNames
         val runTestElementSettings = templateRunSettings.copy(
                 scope = if (isSuite) JasmineScope.SUITE else JasmineScope.TEST,
                 specFile = elementFile.path,
                 testNames = if (isSuite) testElementPath.suiteNames else testElementPath.allNames
+                // All other settings are preserved from the template
         )
 
         return Pair(testElementPath.testElement, runTestElementSettings)

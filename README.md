@@ -28,8 +28,11 @@ Local builds expect to be run on JDK-17, but higher might also work. Managing mu
 with something like [SDKMan](https://sdkman.io/) 
 
 ### Building
-Build the plugin with:  
+Build and test the plugin with:  
 `./gradlew build`
+
+Build the plugin zip with:
+`./gradlew buildPlugin`
 
 The distribution zip will be available at `build/distributions/IdeaJasmine-{version}.zip`
 

@@ -80,7 +80,7 @@ class JasmineRunConfigurationTest : BasePlatformTestCase() {
             configuration.checkConfiguration()
             fail("should throw RuntimeConfigurationError")
         } catch (re: RuntimeConfigurationError) {
-            assertEquals(expectedErrorMessage, re.message)
+            assertEquals(expectedErrorMessage, re.localizedMessage)
         }
     }
 
