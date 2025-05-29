@@ -11,6 +11,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <configurationType implementation="io.pivotal.intellij.jasmine.JasmineConfigurationType"/>
     <programRunner implementation="io.pivotal.intellij.jasmine.JasmineRunProgramRunner"/>
+    <programRunner implementation="io.pivotal.intellij.jasmine.JasmineDebugProgramRunner"/>
     <runConfigurationProducer implementation="io.pivotal.intellij.jasmine.JasmineRunConfigurationProducer"/>
     <iconProvider implementation="io.pivotal.intellij.jasmine.JasmineConfigIconProvider"/>
 

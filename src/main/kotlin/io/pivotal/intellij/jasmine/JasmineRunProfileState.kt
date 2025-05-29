@@ -3,6 +3,7 @@ package io.pivotal.intellij.jasmine
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
@@ -34,6 +35,14 @@ class JasmineRunProfileState(private var project: Project,
 
         runSettings.envData.configureCommandLine(commandLine, true)
 
+        // Add debug options if we're in debug mode
+        val isDebug = executor.id == DefaultDebugExecutor.EXECUTOR_ID
+        if (isDebug) {
+            // Add Node.js debug options
+            commandLine.addParameter("--inspect-brk")
+        }
+        
+        // Add user-specified node options
         val nodeOptionsList = ParametersListUtil.parse(runSettings.nodeOptions.trim())
         commandLine.addParameters(nodeOptionsList)
 
