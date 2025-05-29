@@ -24,6 +24,7 @@ import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import javax.swing.*
+import com.intellij.openapi.ui.TextBrowseFolderListener
 
 
 class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<JasmineRunConfiguration>() {
@@ -63,8 +64,12 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
 
     private fun createWorkingDirectoryField(): TextFieldWithBrowseButton {
         val field = TextFieldWithBrowseButton()
-        SwingHelper.installFileCompletionAndBrowseDialog(project, field, "Jasmine Working Directory",
-                FileChooserDescriptorFactory.createSingleFolderDescriptor())
+        field.addBrowseFolderListener(
+            TextBrowseFolderListener(
+                FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                project
+            )
+        )
         return field
     }
 
@@ -84,13 +89,12 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
 
     private fun createJasmineExecutableField(): TextFieldWithBrowseButton {
         val fullField = TextFieldWithBrowseButton()
-        SwingHelper.installFileCompletionAndBrowseDialog(
-                project,
-                fullField,
-                "Select override Jasmine executable file",
-                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+        fullField.addBrowseFolderListener(
+            TextBrowseFolderListener(
+                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
+                project
+            )
         )
-
         return fullField
     }
 
@@ -108,10 +112,9 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
         }
 
         SwingHelper.installFileCompletionAndBrowseDialog(
-                project,
-                fullField,
-                "Select override Jasmine configuration file",
-                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+            project,
+            fullField,
+            FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
         )
 
         return fullField
@@ -131,7 +134,7 @@ class JasmineConfigurationEditor(private var project: Project) : SettingsEditor<
         val testScopePanel = JPanel(FlowLayout(FlowLayout.CENTER, JBUI.scale(40), 0))
         val buttonGroup = ButtonGroup()
 
-        JasmineScope.values().forEach { scope ->
+        JasmineScope.entries.forEach { scope ->
             val radioButton = JRadioButton(UIUtil.removeMnemonic(scope.label))
 
             val index = UIUtil.getDisplayMnemonicIndex(scope.label)

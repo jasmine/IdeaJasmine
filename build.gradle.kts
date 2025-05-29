@@ -1,48 +1,47 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.8.21"
-    id("org.jetbrains.intellij") version "1.14.2"
+    id("org.jetbrains.kotlin.jvm") version "2.1.20"
+    id("org.jetbrains.intellij.platform") version "2.5.0"
 }
 
 // Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
-    version.set(properties["ideaVersion"] as String)
-    pluginName.set(properties["name"] as String)
-    plugins.set(listOf("JavaScript", "CSS"))
-    updateSinceUntilBuild.set(false)
-}
-
-fun latestReleaseNotesFile(): File {
-    return fileTree("release_notes")
-        .getFiles()
-        .sorted()
-        .last()
-}
-
-tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-
-    patchPluginXml {
-        sinceBuild.set("222")
-        changeNotes.set(provider { latestReleaseNotesFile().readText() })
-    }
-    
-    prepareSandbox {
-        from("src/main/resources/intellij_reporter.js") {
-            into("${intellij.pluginName.get()}/lib/")
-        }
-    }
-
-}
-
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+group = providers.gradleProperty("pluginGroup").get()
+version = providers.gradleProperty("pluginVersion").get()
+
+kotlin {
+    jvmToolchain(17)
+}
+
+dependencies {
+    intellijPlatform {
+        webstorm("2025.1")
+        bundledPlugins("JavaScript", "JavaScriptDebugger")
+        testFramework(TestFrameworkType.Platform)
+    }
+
+    testImplementation("org.hamcrest:hamcrest:2.2")
+    testImplementation("junit:junit:4.13.2")
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        name = providers.gradleProperty("pluginName")
+        version = providers.gradleProperty("pluginVersion")
+        description = providers.gradleProperty("pluginDescription")
+
+        ideaVersion {
+            sinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
+        }
+    }
 }
