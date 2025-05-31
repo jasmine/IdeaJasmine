@@ -8,3 +8,5 @@ build/
 *.iml
 .idea/
 /.intellijPlatform/
+/.kotlin
+.DS_Store
