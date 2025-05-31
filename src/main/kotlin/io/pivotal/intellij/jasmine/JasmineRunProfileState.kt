@@ -3,11 +3,11 @@ package io.pivotal.intellij.jasmine
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.ui.ConsoleView
@@ -17,10 +17,12 @@ import io.pivotal.intellij.jasmine.util.TestNameUtil
 import java.io.File
 import java.nio.file.Paths
 
-class JasmineRunProfileState(private var project: Project,
-                             private var runConfig: JasmineRunConfiguration,
-                             private var executor: Executor,
-                             environment: ExecutionEnvironment) : CommandLineState(environment) {
+class JasmineRunProfileState(
+    private val project: Project,
+    private val runConfig: JasmineRunConfiguration,
+    private val executor: Executor,
+    environment: ExecutionEnvironment
+) : CommandLineState(environment) {
 
     public override fun startProcess(): ProcessHandler {
         val runSettings = runConfig.jasmineRunSettings
@@ -31,9 +33,16 @@ class JasmineRunProfileState(private var project: Project,
         commandLine.withWorkDirectory(workingDir)
 
         commandLine.exePath = interpreter.interpreterSystemDependentPath
-
         runSettings.envData.configureCommandLine(commandLine, true)
 
+        // Add debug options if we're in debug mode
+        val isDebug = executor.id == DefaultDebugExecutor.EXECUTOR_ID
+        if (isDebug) {
+            // Add Node.js debug options
+            commandLine.addParameter("--inspect-brk")
+        }
+        
+        // Add user-specified node options
         val nodeOptionsList = ParametersListUtil.parse(runSettings.nodeOptions.trim())
         commandLine.addParameters(nodeOptionsList)
 
@@ -66,9 +75,9 @@ class JasmineRunProfileState(private var project: Project,
         return SMTestRunnerConnectionUtil.createConsole("Jasmine", props)
     }
 
-    private fun jasminePath(runConfig: JasmineRunConfiguration): String{
+    private fun jasminePath(runConfig: JasmineRunConfiguration): String {
         val jasminePath = Paths.get(runConfig.selectedJasminePackage().systemDependentPath)
-                .resolve(runConfig.jasmineRunSettings.jasmineExecutable)
+            .resolve(runConfig.jasmineRunSettings.jasmineExecutable)
         return jasminePath.toAbsolutePath().toString()
     }
 
@@ -88,17 +97,20 @@ class JasmineRunProfileState(private var project: Project,
         return tempFile.absolutePath
     }
 
-    private class JasmineConsoleProperties(configuration: JasmineRunConfiguration, executor: Executor) : SMTRunnerConsoleProperties(configuration, "Jasmine", executor) {
+
+    private class JasmineConsoleProperties(
+        configuration: JasmineRunConfiguration,
+        executor: Executor
+    ) : SMTRunnerConsoleProperties(configuration, "Jasmine", executor) {
 
         init {
             isUsePredefinedMessageFilter = true
-            setIfUndefined(TestConsoleProperties.HIDE_PASSED_TESTS, false)
-            setIfUndefined(TestConsoleProperties.HIDE_IGNORED_TEST, true)
-            setIfUndefined(TestConsoleProperties.SCROLL_TO_SOURCE, true)
-            setIfUndefined(TestConsoleProperties.SELECT_FIRST_DEFECT, true)
+            setIfUndefined(HIDE_PASSED_TESTS, false)
+            setIfUndefined(HIDE_IGNORED_TEST, true)
+            setIfUndefined(SCROLL_TO_SOURCE, true)
+            setIfUndefined(SELECT_FIRST_DEFECT, true)
             isIdBasedTestTree = true
             isPrintTestingStartedTime = false
         }
     }
-
 }
