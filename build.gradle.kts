@@ -32,6 +32,7 @@ dependencies {
 
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:5.18.0")
 }
 
 intellijPlatform {
