@@ -11,12 +11,9 @@ import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.javascript.testFramework.util.JsTestFqn
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.util.PathUtil
 import com.intellij.util.execution.ParametersListUtil
-import org.apache.commons.lang.StringUtils
+import io.pivotal.intellij.jasmine.util.TestNameUtil
 import java.io.File
 import java.nio.file.Paths
 
@@ -30,11 +27,8 @@ class JasmineRunProfileState(private var project: Project,
         val interpreter = runSettings.nodeJs.resolveAsLocal(project)
         val commandLine = GeneralCommandLine()
 
-        if (StringUtils.isBlank(runSettings.workingDir)) {
-            commandLine.withWorkDirectory(project.basePath)
-        } else {
-            commandLine.withWorkDirectory(runSettings.workingDir)
-        }
+        val workingDir = runSettings.workingDir.takeIf { it.isNotBlank() } ?: project.basePath
+        commandLine.withWorkDirectory(workingDir)
 
         commandLine.exePath = interpreter.interpreterSystemDependentPath
 
@@ -48,7 +42,7 @@ class JasmineRunProfileState(private var project: Project,
         val jasmineOptionsList = ParametersListUtil.parse(runSettings.extraJasmineOptions.trim())
         commandLine.addParameters(jasmineOptionsList)
 
-        if (!StringUtils.isBlank(runSettings.jasmineConfigFile)) {
+        if (runSettings.jasmineConfigFile.isNotBlank()) {
             commandLine.addParameter("--config=${runSettings.jasmineConfigFile}")
         }
 
@@ -59,7 +53,7 @@ class JasmineRunProfileState(private var project: Project,
         }
 
         if (runSettings.testNames.isNotEmpty()) {
-            commandLine.addParameter("--filter=${JsTestFqn.getPresentableName(runSettings.testNames)}")
+            commandLine.addParameter("--filter=${TestNameUtil.getPresentableName(runSettings.testNames)}")
         }
 
         val processHandler = KillableColoredProcessHandler(commandLine)
@@ -78,11 +72,20 @@ class JasmineRunProfileState(private var project: Project,
         return jasminePath.toAbsolutePath().toString()
     }
 
-    private fun findReporterPath(): String{
-        val jarPath = File(PathUtil.getJarPathForClass(this.javaClass))
-        val pluginRoot = jarPath.parentFile.parentFile
-        val reporterPath = FileUtil.toSystemDependentName("lib/intellij_reporter.js")
-        return File(pluginRoot, reporterPath).absolutePath
+    private fun findReporterPath(): String {
+        val inputStream = javaClass.classLoader.getResourceAsStream("intellij_reporter.js")
+            ?: error("Cannot find intellij_reporter.js in resources")
+
+        val tempFile = File.createTempFile("intellij_reporter", ".js")
+        tempFile.deleteOnExit()
+
+        inputStream.use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        return tempFile.absolutePath
     }
 
     private class JasmineConsoleProperties(configuration: JasmineRunConfiguration, executor: Executor) : SMTRunnerConsoleProperties(configuration, "Jasmine", executor) {

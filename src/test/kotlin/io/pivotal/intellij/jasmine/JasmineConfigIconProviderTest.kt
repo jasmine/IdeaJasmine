@@ -1,26 +1,26 @@
 package io.pivotal.intellij.jasmine
 
 import com.intellij.json.JsonFileType
-import com.intellij.openapi.util.IconLoader.CachedImageIcon
+import com.intellij.openapi.util.IconLoader
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.hamcrest.CoreMatchers.endsWith
-import org.junit.Assert.assertThat
+import javax.swing.Icon
 
 class JasmineConfigIconProviderTest : BasePlatformTestCase() {
 
     fun `test shows jasmine icon for jasmine config file`() {
         val jasmineConfigFile = myFixture.configureByText("jasmine.json", "")
 
-        val jasmineIcon = JasmineConfigIconProvider().getIcon(jasmineConfigFile, 0) as CachedImageIcon
+        val expectedIcon: Icon = IconLoader.getIcon("/icons/jasmine.png", JasmineConfigIconProvider::class.java)
+        val actualIcon = JasmineConfigIconProvider().getIcon(jasmineConfigFile, 0)
 
-        assertThat(jasmineIcon.originalPath.toString(), endsWith("/icons/jasmine.png"))
+        assertSame("Expected jasmine icon to be used", expectedIcon, actualIcon)
     }
 
     fun `test does not show jasmine icon on other files`() {
         val jsonFile = myFixture.configureByText(JsonFileType.INSTANCE, "")
         val txtNamedJasmine = myFixture.configureByText("jasmine.txt", "")
 
-        assertNull(JasmineConfigIconProvider().getIcon(jsonFile, 0))
-        assertNull(JasmineConfigIconProvider().getIcon(txtNamedJasmine, 0))
+        assertNull("No icon expected for generic .json", JasmineConfigIconProvider().getIcon(jsonFile, 0))
+        assertNull("No icon expected for .txt", JasmineConfigIconProvider().getIcon(txtNamedJasmine, 0))
     }
 }

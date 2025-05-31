@@ -1,30 +1,12 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
   <id>io.pivotal.jasmine</id>
   <name>Jasmine</name>
-  <version>1.2</version>
   <vendor email="jasmine-js@googlegroups.com" url="http://jasmine.github.io">Jasmine</vendor>
 
+  <depends>JavaScript</depends>
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.json</depends>
-  <depends>JavaScript</depends>
-
-  <description><![CDATA[
-      Run your Jasmine 3.0+ tests right from Intelli-J
-    ]]></description>
-
-  <change-notes><![CDATA[
-      First release
-    ]]>
-  </change-notes>
-
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="191"/>
-
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
 
   <extensions defaultExtensionNs="com.intellij">
     <configurationType implementation="io.pivotal.intellij.jasmine.JasmineConfigurationType"/>
@@ -33,9 +15,4 @@
     <iconProvider implementation="io.pivotal.intellij.jasmine.JasmineConfigIconProvider"/>
     <notificationGroup id="Jasmine Plugin" displayType="BALLOON"/>
   </extensions>
-
-  <actions>
-    <!-- Add your actions here -->
-  </actions>
-
 </idea-plugin>

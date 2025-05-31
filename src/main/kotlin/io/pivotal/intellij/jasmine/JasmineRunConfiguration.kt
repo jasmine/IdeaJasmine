@@ -8,14 +8,14 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreter
 import com.intellij.javascript.nodejs.util.NodePackage
-import com.intellij.javascript.testFramework.util.JsTestFqn
 import com.intellij.openapi.project.Project
 import com.intellij.util.PathUtil
-import com.intellij.util.io.isFile
 import io.pivotal.intellij.jasmine.scope.JasmineScope
 import io.pivotal.intellij.jasmine.util.JasmineSerializationUtil
+import io.pivotal.intellij.jasmine.util.TestNameUtil
 import org.jdom.Element
 import java.nio.file.Paths
+import kotlin.io.path.isRegularFile
 
 
 class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, name: String)
@@ -47,12 +47,13 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
         if (scope.requiresSpecFile()) {
             when {
                 jasmineRunSettings.specFile.isBlank() -> throw RuntimeConfigurationError("Unspecified spec file")
-                !Paths.get(jasmineRunSettings.specFile).isFile() -> throw RuntimeConfigurationError("No such spec file")
+                !Paths.get(jasmineRunSettings.specFile).isRegularFile()
+                    -> throw RuntimeConfigurationError("No such spec file")
             }
         }
 
         if (scope.requiresTestNames() && jasmineRunSettings.testNames.isEmpty()) {
-            throw RuntimeConfigurationError("Unspecified ${scope.name.toLowerCase()} name")
+            throw RuntimeConfigurationError("Unspecified ${scope.name.lowercase()} name")
         }
 
         selectedJasminePackage().validateForRunConfiguration("jasmine")
@@ -69,7 +70,7 @@ class JasmineRunConfiguration(project: Project, factory: ConfigurationFactory, n
     override fun suggestedName(): String? = when (jasmineRunSettings.scope) {
         JasmineScope.ALL -> "All Tests"
         JasmineScope.SPEC_FILE -> PathUtil.getFileName(jasmineRunSettings.specFile)
-        JasmineScope.SUITE, JasmineScope.TEST -> JsTestFqn.getPresentableName(jasmineRunSettings.testNames)
+        JasmineScope.SUITE, JasmineScope.TEST -> TestNameUtil.getPresentableName(jasmineRunSettings.testNames)
     }
 
     override fun getActionName(): String? = when (jasmineRunSettings.scope) {
