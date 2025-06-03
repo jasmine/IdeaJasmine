@@ -13,6 +13,8 @@
     <programRunner implementation="io.pivotal.intellij.jasmine.JasmineRunProgramRunner"/>
     <runConfigurationProducer implementation="io.pivotal.intellij.jasmine.JasmineRunConfigurationProducer"/>
     <iconProvider implementation="io.pivotal.intellij.jasmine.JasmineConfigIconProvider"/>
+
+    <runLineMarkerContributor language="JavaScript" implementationClass="io.pivotal.intellij.jasmine.JasmineRunLineMarkerContributor"/>
     <notificationGroup id="Jasmine Plugin" displayType="BALLOON"/>
   </extensions>
 </idea-plugin>

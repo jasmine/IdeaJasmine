@@ -8,6 +8,8 @@ import com.intellij.notification.Notifications
 import com.intellij.openapi.vfs.VirtualFile
 
 object JasmineUtil {
+    val runnableFnNames = arrayOf("describe", "fdescribe", "it", "fit")
+
     fun isJasmineConfigFile(file: VirtualFile?): Boolean {
         return file != null &&
                 file.isValid &&
@@ -17,13 +19,11 @@ object JasmineUtil {
     }
 
     /**
-     * Checks if a JavaScript file is a Jasmine test file by analyzing content for test constructs.
-     * This is meant to be used as a fast check before analyzing the AST.
+     * Checks if a JavaScript file could be a Jasmine test file by analyzing content for test constructs.
+     * This isn't precise: it could return false positives in some cases.
      */
     fun isJasmineTestFile(jsFile: JSFile): Boolean {
-        val fileContent = jsFile.text.lowercase()
-        return fileContent.contains("jasmine.") || (fileContent.contains("describe(") &&
-                (fileContent.contains("it(") || fileContent.contains("test(")))
+        return runnableFnNames.any { fn -> jsFile.text.contains("$fn(") }
     }
 
     /**
