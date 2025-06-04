@@ -40,9 +40,17 @@ intellijPlatform {
         name = providers.gradleProperty("pluginName")
         version = providers.gradleProperty("pluginVersion")
         description = providers.gradleProperty("pluginDescription")
+        changeNotes = providers.provider { latestReleaseNotesFile().readText() }
 
         ideaVersion {
             sinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
         }
     }
+}
+
+fun latestReleaseNotesFile(): File {
+    return fileTree("release_notes")
+        .getFiles()
+        .sorted()
+        .last()
 }

@@ -3,12 +3,6 @@
   <id>io.pivotal.jasmine</id>
   <name>Jasmine</name>
   <vendor email="jasmine-js@googlegroups.com" url="http://jasmine.github.io">Jasmine</vendor>
-  <change-notes>
-    - Add support for IDEA 2025.*
-    - Drop support for 2023.* and older
-    - Add debugger support
-    - Fix run buttons in the left gutter
-  </change-notes>
 
   <depends>JavaScript</depends>
   <depends>com.intellij.modules.lang</depends>
