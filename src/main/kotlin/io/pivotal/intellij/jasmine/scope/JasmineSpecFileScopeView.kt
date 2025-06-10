@@ -19,8 +19,8 @@ class JasmineSpecFileScopeView(project: Project) : JasmineScopeView {
         SwingHelper.installFileCompletionAndBrowseDialog(
                 project,
                 specFileField,
-                "Select Spec File",
                 FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+                    .withTitle("Select Spec File")
         )
         panel = FormBuilder().setAlignLabelOnRight(false)
                 .addLabeledComponent("Spec file:", specFileField)

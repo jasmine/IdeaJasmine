@@ -23,8 +23,8 @@ open class JasmineSuiteOrTestScopeView(project: Project,
         SwingHelper.installFileCompletionAndBrowseDialog(
                 project,
                 specFileField,
-                "Select Spec File",
                 FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+                    .withTitle("Select Spec File")
         )
 
         panel = FormBuilder().setAlignLabelOnRight(false)
