@@ -44,10 +44,13 @@ jobs:
           path: ~/test-results
 
       - run:
+          name: build plugin
+          command: ./gradlew buildPlugin --info
+
+      - run:
           name: Save built plugin
           command: |
             mkdir -p ~/package/
-            find build -type f -name '*.zip' -exec cp {} ~/package/ \;
+            cp build/distributions/*.zip ~/package
       - store_artifacts:
           path: ~/package
-          
