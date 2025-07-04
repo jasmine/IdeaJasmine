@@ -13,6 +13,7 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
+import io.pivotal.intellij.jasmine.util.JsRegexUtil
 import io.pivotal.intellij.jasmine.util.TestNameUtil
 import java.io.File
 import java.nio.file.Paths
@@ -62,7 +63,9 @@ class JasmineRunProfileState(
         }
 
         if (runSettings.testNames.isNotEmpty()) {
-            commandLine.addParameter("--filter=${TestNameUtil.getPresentableName(runSettings.testNames)}")
+            val name = runSettings.testNames.joinToString(" ")
+            val escaped = JsRegexUtil.escape(name)
+            commandLine.addParameter("--filter=${escaped}")
         }
 
         val processHandler = KillableColoredProcessHandler(commandLine)

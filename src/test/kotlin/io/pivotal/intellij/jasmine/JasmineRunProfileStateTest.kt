@@ -50,8 +50,18 @@ class JasmineRunProfileStateTest : BasePlatformTestCase() {
             JasmineRunSettings(scope = JasmineScope.TEST, testNames = testNames)
         )
 
-        assertTrue(suiteCommand.endsWith("\"--filter=App.spec.name with spaces\""))
-        assertTrue(testCommand.endsWith("\"--filter=App.spec.name with spaces\""))
+        assertTrue(suiteCommand.endsWith("\"--filter=App spec name with spaces\""))
+        assertTrue(testCommand.endsWith("\"--filter=App spec name with spaces\""))
+    }
+
+    fun `test filter escapes special regex characters`() {
+        val testNames = listOf("suite", "spec with * in it")
+
+        val testCommand = commandLineFromSettings(
+            JasmineRunSettings(scope = JasmineScope.TEST, testNames = testNames)
+        )
+
+        assertTrue(testCommand.endsWith("\"--filter=suite spec with \\* in it\""))
     }
 
     fun `test filter not added when empty test names`() {
